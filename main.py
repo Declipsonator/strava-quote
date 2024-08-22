@@ -5,6 +5,7 @@ from stravalib.client import Client
 import pickle
 import os
 import sys
+import random
 
 script_location = os.path.dirname(os.path.abspath(sys.argv[0]))
 client = Client()
@@ -72,16 +73,12 @@ for a in activities:
     if (activity.description is not None and activity.description != "") or daysSince > 5:
         break
 
-    response = ollama.chat(model='llama3.1', messages=[
-        {
-            'role': 'user',
-            'content': 'Provide only an original quote that inspires reflection about nature, thought, or the essence of life. '
-                       'Avoid using logic-based expressions like true or false. Do not provide any context or explanation. Do not '
-                       'attribute the quote to any author or source. Do not use quotation marks.'
 
-        },
-    ])
-    print(response["message"]["content"])
+    response = ollama.generate(model='llama3.1', prompt='I am tutor #{}. Provide only an original quote that inspires reflection about nature, thought, or the essence of life. '
+                       'Avoid using logic-based expressions like true or false. Do not provide any context or explanation. Do not '
+                       'attribute the quote to any author or source. Do not use quotation marks. Do not say something generic or well known.'.format(random.randint(0, 10000)), options={'temperature': 0.9, 'seed': random.randint(0, 1000000)})
+
+    print(response["response"])
     client.update_activity(activity.id,
-                           description=response["message"]["content"] + "\n\n-llama3.1   \n" + datetime.now()
+                           description=response["response"] + "\n\n-llama3.1   \n" + datetime.now()
                            .strftime("%Y-%m-%d %H:%M:%S"))
